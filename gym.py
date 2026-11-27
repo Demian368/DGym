@@ -1,58 +1,140 @@
 import streamlit as st
 import time
 
-st.title("Asistente de Gimnasio Avanzado")
+# Configuración de la página
+st.set_page_config(page_title="Asistente Pro de Gimnasio", layout="wide")
 
-# Inicializar estado para el registro y el método 3/7
+# Inicialización de estado
 if "log" not in st.session_state:
     st.session_state.log = []
 if "step_37" not in st.session_state:
-    st.session_state.step_37 = 0  # 0: reposo, 1-5: serie activa
+    st.session_state.step_37 = 0
 
-repeticiones_37 = [3, 4, 5, 6, 7]
+# Título principal
+st.title("💪 Asistente Pro de Gimnasio")
+st.markdown("---")
 
-menu = {"Registrar Ejercicio": 1, "Método 3/7": 2}
-eleccion = st.sidebar.selectbox("Módulo", list(menu.keys()))
+# Menú lateral
+menu = ["Registro de Cargas", "Rutinas y Modalidades", "Método 3/7"]
+seleccion = st.sidebar.selectbox("Navegación", menu)
 
-if menu[eleccion] == 1:
-    st.header("Registro de Cargas")
-    ejercicio = st.text_input("Nombre del ejercicio")
-    peso = st.number_input("Peso (kg)", min_value=0.5, step=0.5)
-    series = st.number_input("Series", min_value=1, step=1)
-    reps = st.number_input("Repeticiones", min_value=1, step=1)
+# --- MÓDULO 1: REGISTRO DE CARGAS ---
+if seleccion == "Registro de Cargas":
+    st.header("📊 Registro y Seguimiento de Cargas")
     
-    if st.button("Guardar Serie"):
-        st.session_state.log.append({"Ejercicio": ejercicio, "Peso": peso, "Series": series, "Reps": reps})
-        st.success("¡Serie registrada!")
+    col1, col2 = st.columns(2)
+    with col1:
+        ejercicio = st.text_input("Nombre del Ejercicio", placeholder="Ej. Press de Banca")
+        peso = st.number_input("Peso (kg)", min_value=0.5, step=0.5)
+    with col2:
+        series = st.number_input("Series", min_value=1, step=1, value=3)
+        reps = st.number_input("Repeticiones", min_value=1, step=1, value=10)
     
+    if st.button("Guardar Serie", type="primary"):
+        if ejercicio:
+            st.session_state.log.append({
+                "Ejercicio": ejercicio, "Peso (kg)": peso, 
+                "Series": series, "Reps": reps
+            })
+            st.success("¡Registro guardado con éxito!")
+        else:
+            st.warning("Por favor, ingresa el nombre del ejercicio.")
+    
+    st.markdown("### Historial de Entrenamiento")
     if st.session_state.log:
-        st.subheader("Tu Historial")
         st.table(st.session_state.log)
+    else:
+        st.info("No hay registros aún. ¡Completa tu primer ejercicio!")
 
-elif menu[eleccion] == 2:
-    st.header("Entrenamiento Método 3/7")
+# --- MÓDULO 2: RUTINAS Y MODALIDADES ---
+elif seleccion == "Rutinas y Modalidades":
+    st.header("📋 Modalidades de Entrenamiento y Recomendaciones")
+    
+    modo = st.selectbox(
+        "Selecciona tu enfoque",
+        ["PPL (Push/Pull/Legs)", "Full Body", "Arnold Split", "Calistenia"]
+    )
+    
+    st.markdown("---")
+    
+    if modo == "PPL (Push/Pull/Legs)":
+        st.subheader("Estructura: Empuje / Tracción / Pierna")
+        st.write("Ideal para frecuencias de 3 a 6 días por semana, separando patrones de movimiento.")
+        
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.info("**Día 1: Empuje (Pecho/Hombro/Tríceps)**\n* Press Militar\n* Aperturas con mancuernas\n* Extensiones de tríceps")
+        with c2:
+            st.info("**Día 2: Tracción (Espalda/Bíceps)**\n* Dominadas o Jalón al pecho\n* Remo con barra\n* Curl de bíceps")
+        with c3:
+            st.info("**Día 3: Pierna (Cuádriceps/Isios/Gemelo)**\n* Sentadilla con barra\n* Peso muerto rumano\n* Elevación de talones")
+            
+    elif modo == "Full Body":
+        st.subheader("Estructura: Cuerpo Completo")
+        st.write("Alta frecuencia para estimular todos los grupos musculares en cada sesión.")
+        st.warning("Recomendación: Deja un día de descanso entre sesiones.")
+        st.write("• **Bloque Principal:** Sentadillas, Press de Banca, Remo Pendlay.\n• **Accesorios:** Zancadas y Planchas abdominales.")
+
+    elif modo == "Arnold Split":
+        st.subheader("Estructura: Variante Clásica de Arnold Schwarzenegger")
+        st.write("Combina grupos musculares antagonistas para maximizar el bombeo y densidad muscular.")
+        with st.expander("Ver distribución de días"):
+            st.write("**Día A (Pecho y Espalda):** Superseries de press y remos.\n**Día B (Hombros y Brazos):** Enfoque en deltoides y brazos grandes.\n**Día C (Pierna completa):** Énfasis en sentadilla y prensa.")
+
+    elif modo == "Calistenia":
+        st.subheader("🏋️‍♂️ Bloque de Calistenia Pura")
+        st.write("Entrenamiento con peso corporal. Adapta la dificultad según tu nivel.")
+        
+        ej_cal = st.selectbox("Elige un ejercicio para ver progresiones", ["Flexiones", "Dominadas", "Fondos"])
+        
+        col_p1, col_p2 = st.columns(2)
+        if ej_cal == "Flexiones":
+            col_p1.success("🟢 Principiante: Con rodillas apoyadas o manos en pared.")
+            col_p2.error("🔴 Avanzado: Flexiones diamante o a una mano.")
+        elif ej_cal == "Dominadas":
+            col_p1.success("🟢 Principiante: Dominadas negativas o con banda elástica.")
+            col_p2.error("🔴 Avanzado: Dominadas explosivas al pecho o con lastre.")
+        elif ej_cal == "Fondos":
+            col_p1.success("🟢 Principiante: Fondos en banco.")
+            col_p2.error("🔴 Avanzado: Fondos en paralelas lastrados.")
+
+# --- MÓDULO 3: MÉTODO 3/7 ---
+elif seleccion == "Método 3/7":
+    st.header("⏱️ Entrenador del Método 3/7")
+    st.write("Realiza 5 series aumentando repeticiones (3, 4, 5, 6, 7) con solo 15 segundos de descanso.")
+    
+    repeticiones_37 = [3, 4, 5, 6, 7]
     
     if st.session_state.step_37 == 0:
-        if st.button("Iniciar Serie (3 reps)"):
+        st.info("El método busca la máxima congestión muscular mediante fatiga acumulada.")
+        if st.button("Iniciar Nuevo Bloque 3/7", type="primary"):
             st.session_state.step_37 = 1
             st.rerun()
     else:
         serie_actual = st.session_state.step_37
         reps_objetivo = repeticiones_37[serie_actual - 1]
-        st.subheader(f"Serie {serie_actual}/5 - Haz {reps_objetivo} repeticiones")
         
-        if serie_actual < 5:
-            if st.button("Terminé mis reps - Iniciar Descanso"):
-                barra_progreso = st.progress(0)
-                for i in range(15):
-                    time.sleep(1)
-                    progreso = (i + 1) / 15
-                    barra_progreso.progress(progreso)
-                st.session_state.step_37 += 1
-                st.rerun()
-        else:
-            st.balloons()
-            st.success("¡Bloque 3/7 completado con éxito!")
-            if st.button("Reiniciar Método"):
-                st.session_state.step_37 = 0
-                st.rerun()
+        st.subheader(f"Fase {serie_actual}/5")
+        st.metric(label="Objetivo de Repeticiones", value=f"{reps_objetivo} reps")
+        
+        if serie_actual <= 5:
+            if st.button(f"Completé las {reps_objetivo} reps - Iniciar Descanso", type="secondary"):
+                with st.spinner("Contando 15 segundos de descanso..."):
+                    barra = st.progress(0)
+                    for i in range(15):
+                        time.sleep(1)
+                        barra.progress((i + 1) / 15)
+                
+                if serie_actual < 5:
+                    st.session_state.step_37 += 1
+                    st.rerun()
+                else:
+                    st.session_state.step_37 = 6 # Estado final
+                    st.rerun()
+        
+    if st.session_state.step_37 == 6:
+        st.balloons()
+        st.success("¡Bloque 3/7 completado con éxito! Excelente trabajo.")
+        if st.button("Reiniciar Temporizador"):
+            st.session_state.step_37 = 0
+            st.rerun()
