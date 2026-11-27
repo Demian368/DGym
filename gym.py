@@ -1,4 +1,4 @@
-import streamlit st
+import streamlit as st
 import time
 
 # Configuración de la página
@@ -8,7 +8,7 @@ st.set_page_config(page_title="Asistente Pro de Gimnasio", layout="wide")
 if "log" not in st.session_state:
     st.session_state.log = []
 if "step_37" not in st.session_state:
-    st.session_state.step_37 = 0  # 0: reposo, 1-5: series activas, 6: descanso largo
+    st.session_state.step_37 = 0  # 0: reposo, 1-5: series activas, 6: descanso largo, 7: completado
 
 # Título principal
 st.title("💪 Asistente Pro de Gimnasio")
@@ -21,7 +21,7 @@ seleccion = st.sidebar.selectbox("Navegación", menu)
 # --- MÓDULO 1: REGISTRO DE CARGAS ---
 if seleccion == "Registro de Cargas":
     st.header("📊 Registro y Seguimiento de Cargas")
-    
+
     col1, col2 = st.columns(2)
     with col1:
         ejercicio = st.text_input("Nombre del Ejercicio", placeholder="Ej. Press de Banca")
@@ -29,17 +29,19 @@ if seleccion == "Registro de Cargas":
     with col2:
         series = st.number_input("Series", min_value=1, step=1, value=3)
         reps = st.number_input("Repeticiones", min_value=1, step=1, value=10)
-    
+
     if st.button("Guardar Serie", type="primary"):
         if ejercicio:
             st.session_state.log.append({
-                "Ejercicio": ejercicio, "Peso (kg)": peso, 
-                "Series": series, "Reps": reps
+                "Ejercicio": ejercicio,
+                "Peso (kg)": peso,
+                "Series": series,
+                "Reps": reps
             })
             st.success("¡Registro guardado con éxito!")
         else:
             st.warning("Por favor, ingresa el nombre del ejercicio.")
-    
+
     st.markdown("### Historial de Entrenamiento")
     if st.session_state.log:
         st.table(st.session_state.log)
@@ -49,18 +51,18 @@ if seleccion == "Registro de Cargas":
 # --- MÓDULO 2: RUTINAS Y MODALIDADES ---
 elif seleccion == "Rutinas y Modalidades":
     st.header("📋 Modalidades de Entrenamiento y Recomendaciones")
-    
+
     modo = st.selectbox(
         "Selecciona tu enfoque",
         ["PPL (Push/Pull/Legs)", "Full Body", "Arnold Split", "Calistenia"]
     )
-    
+
     st.markdown("---")
-    
+
     if modo == "PPL (Push/Pull/Legs)":
         st.subheader("Estructura: Empuje / Tracción / Pierna")
         st.write("Ideal para frecuencias de 3 a 6 días por semana, separando patrones de movimiento.")
-        
+
         c1, c2, c3 = st.columns(3)
         with c1:
             st.info("**Día 1: Empuje (Pecho/Hombro/Tríceps)**\n* Press Militar\n* Aperturas con mancuernas\n* Extensiones de tríceps")
@@ -68,7 +70,7 @@ elif seleccion == "Rutinas y Modalidades":
             st.info("**Día 2: Tracción (Espalda/Bíceps)**\n* Dominadas o Jalón al pecho\n* Remo con barra\n* Curl de bíceps")
         with c3:
             st.info("**Día 3: Pierna (Cuádriceps/Isios/Gemelo)**\n* Sentadilla con barra\n* Peso muerto rumano\n* Elevación de talones")
-            
+
     elif modo == "Full Body":
         st.subheader("Estructura: Cuerpo Completo")
         st.write("Alta frecuencia para estimular todos los grupos musculares en cada sesión.")
@@ -84,9 +86,9 @@ elif seleccion == "Rutinas y Modalidades":
     elif modo == "Calistenia":
         st.subheader("🏋️‍♂️ Bloque de Calistenia Pura")
         st.write("Entrenamiento con peso corporal. Adapta la dificultad según tu nivel.")
-        
+
         ej_cal = st.selectbox("Elige un ejercicio para ver progresiones", ["Flexiones", "Dominadas", "Fondos"])
-        
+
         col_p1, col_p2 = st.columns(2)
         if ej_cal == "Flexiones":
             col_p1.success("🟢 Principiante: Con rodillas apoyadas o manos en pared.")
@@ -101,48 +103,48 @@ elif seleccion == "Rutinas y Modalidades":
 # --- MÓDULO 3: MÉTODO 3/7 ---
 elif seleccion == "Método 3/7":
     st.header("⏱️ Entrenador del Método 3/7")
-    st.write("Realiza 5 series aumentando repeticiones (3, 4, 5, 6, 7) con cortos descansos, y un descanso final prolongado.")
-    
+    st.write("Realiza 5 series aumentando repeticiones (3, 4, 5, 6, 7) con 15 segundos de descanso, y un descanso final de 2 minutos y 30 segundos.")
+
     repeticiones_37 = [3, 4, 5, 6, 7]
-    
+
     if st.session_state.step_37 == 0:
         st.info("El método busca la máxima congestión muscular mediante fatiga acumulada.")
         if st.button("Iniciar Nuevo Bloque 3/7", type="primary"):
             st.session_state.step_37 = 1
             st.rerun()
-            
+
     elif 1 <= st.session_state.step_37 <= 5:
         serie_actual = st.session_state.step_37
         reps_objetivo = repeticiones_37[serie_actual - 1]
-        
+
         st.subheader(f"Fase {serie_actual}/5")
         st.metric(label="Objetivo de Repeticiones", value=f"{reps_objetivo} reps")
-        
-        if st.button(f"Completé las {reps_objetivo} reps - Iniciar Descanso", type="secondary"):
+
+        if st.button(f"Completé las {reps_objetivo} reps - Iniciar Descanso (15s)", type="secondary"):
             with st.spinner("Contando 15 segundos de descanso..."):
                 barra = st.progress(0)
                 for i in range(15):
                     time.sleep(1)
                     barra.progress((i + 1) / 15)
-            
+
             st.session_state.step_37 += 1
             st.rerun()
-            
+
     elif st.session_state.step_37 == 6:
-        st.subheader("🎉 ¡Fase final alcanzada!")
+        st.subheader("🎉 ¡Serie de 3/7 completada!")
         st.warning("Iniciando descanso largo de recuperación (2 minutos y 30 segundos).")
-        
-        with st.spinner("Recuperando energías..."):
+
+        with st.spinner("Recuperando energías (150 segundos)..."):
             barra_larga = st.progress(0)
-            tiempo_total = 150 # 150 segundos = 2.5 minutos
+            tiempo_total = 150  # 2 minutos y 30 segundos
             for i in range(tiempo_total):
                 time.sleep(1)
                 barra_larga.progress((i + 1) / tiempo_total)
-        
-        st.session_state.step_37 = 7  # Estado de completado
+
+        st.session_state.step_37 = 7
         st.rerun()
-        
-    elif st.session_state.step_37 == 7:
+
+    else:
         st.balloons()
         st.success("¡Bloque completo del Método 3/7 terminado con éxito! Excelente trabajo.")
         if st.button("Reiniciar Entrenador"):
