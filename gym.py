@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit st
 import time
 
 # Configuración de la página
@@ -8,7 +8,7 @@ st.set_page_config(page_title="Asistente Pro de Gimnasio", layout="wide")
 if "log" not in st.session_state:
     st.session_state.log = []
 if "step_37" not in st.session_state:
-    st.session_state.step_37 = 0
+    st.session_state.step_37 = 0  # 0: reposo, 1-5: series activas, 6: descanso largo
 
 # Título principal
 st.title("💪 Asistente Pro de Gimnasio")
@@ -101,7 +101,7 @@ elif seleccion == "Rutinas y Modalidades":
 # --- MÓDULO 3: MÉTODO 3/7 ---
 elif seleccion == "Método 3/7":
     st.header("⏱️ Entrenador del Método 3/7")
-    st.write("Realiza 5 series aumentando repeticiones (3, 4, 5, 6, 7) con solo 15 segundos de descanso.")
+    st.write("Realiza 5 series aumentando repeticiones (3, 4, 5, 6, 7) con cortos descansos, y un descanso final prolongado.")
     
     repeticiones_37 = [3, 4, 5, 6, 7]
     
@@ -110,31 +110,41 @@ elif seleccion == "Método 3/7":
         if st.button("Iniciar Nuevo Bloque 3/7", type="primary"):
             st.session_state.step_37 = 1
             st.rerun()
-    else:
+            
+    elif 1 <= st.session_state.step_37 <= 5:
         serie_actual = st.session_state.step_37
         reps_objetivo = repeticiones_37[serie_actual - 1]
         
         st.subheader(f"Fase {serie_actual}/5")
         st.metric(label="Objetivo de Repeticiones", value=f"{reps_objetivo} reps")
         
-        if serie_actual <= 5:
-            if st.button(f"Completé las {reps_objetivo} reps - Iniciar Descanso", type="secondary"):
-                with st.spinner("Contando 15 segundos de descanso..."):
-                    barra = st.progress(0)
-                    for i in range(15):
-                        time.sleep(1)
-                        barra.progress((i + 1) / 15)
-                
-                if serie_actual < 5:
-                    st.session_state.step_37 += 1
-                    st.rerun()
-                else:
-                    st.session_state.step_37 = 6 # Estado final
-                    st.rerun()
+        if st.button(f"Completé las {reps_objetivo} reps - Iniciar Descanso", type="secondary"):
+            with st.spinner("Contando 15 segundos de descanso..."):
+                barra = st.progress(0)
+                for i in range(15):
+                    time.sleep(1)
+                    barra.progress((i + 1) / 15)
+            
+            st.session_state.step_37 += 1
+            st.rerun()
+            
+    elif st.session_state.step_37 == 6:
+        st.subheader("🎉 ¡Fase final alcanzada!")
+        st.warning("Iniciando descanso largo de recuperación (2 minutos y 30 segundos).")
         
-    if st.session_state.step_37 == 6:
+        with st.spinner("Recuperando energías..."):
+            barra_larga = st.progress(0)
+            tiempo_total = 150 # 150 segundos = 2.5 minutos
+            for i in range(tiempo_total):
+                time.sleep(1)
+                barra_larga.progress((i + 1) / tiempo_total)
+        
+        st.session_state.step_37 = 7  # Estado de completado
+        st.rerun()
+        
+    elif st.session_state.step_37 == 7:
         st.balloons()
-        st.success("¡Bloque 3/7 completado con éxito! Excelente trabajo.")
-        if st.button("Reiniciar Temporizador"):
+        st.success("¡Bloque completo del Método 3/7 terminado con éxito! Excelente trabajo.")
+        if st.button("Reiniciar Entrenador"):
             st.session_state.step_37 = 0
             st.rerun()
